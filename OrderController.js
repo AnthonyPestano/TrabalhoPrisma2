@@ -4,20 +4,22 @@ const prisma = new PrismaClient();
 
 module.exports = {
   async CadastrarOrder(req, res) {
-    const { id } = req.params;
-    const { orderDate, totalAmount, customerId } = req.body;
+    //const { id } = req.params;
+    const { customerId, orderDate, totalAmount } = req.body;
+    console.log("id:"+customerId)
 
     try {
       const novaOrder = await prisma.order.create({
-        where: { id: parseInt(id) },
+        //where: {customerId: parseInt(id) },
         data: {
-          orderDate,
+          orderDate: new Date(orderDate),
           totalAmount,
-          customerId,
+          customerId ,
         },
       });
       res.status(201).json(novaOrder);
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: 'Falha ao cadastrar nova order' });
     }
   },
@@ -51,13 +53,14 @@ module.exports = {
 
   async AtualizarOrder (req, res) {
     const { id } = req.params;
-    const { orderDate, totalAmount} = req.body;
+    const { orderDate, totalAmount, customerId} = req.body;
     try {
       const orderAtualizado = await prisma.order.update({
         where: { id: parseInt(id) },
         data: {
           orderDate,
           totalAmount,
+          customerId,
         },
       });
       res.status(200).json(orderAtualizado);
