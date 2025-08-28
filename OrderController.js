@@ -58,7 +58,7 @@ module.exports = {
       const orderAtualizado = await prisma.order.update({
         where: { id: parseInt(id) },
         data: {
-          orderDate,
+          orderDate: new Date(orderDate),
           totalAmount,
           customerId,
         },
@@ -66,6 +66,8 @@ module.exports = {
       res.status(200).json(orderAtualizado);
     } catch (error) {
       res.status(500).json({ error: 'Falha ao atualizar order' });
+      console.error('Erro ao atualizar cliente:', error);
+
     }
   },
 
