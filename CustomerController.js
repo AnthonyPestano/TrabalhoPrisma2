@@ -1,83 +1,95 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-
 module.exports = {
-  async CadastrarOrder(req, res) {
-    //const { id } = req.params;
-    const { customerId, orderDate, totalAmount } = req.body;
-    console.log("id:"+customerId)
-
+  async ListarTodosCustomers(req, res) {
     try {
-      const novaOrder = await prisma.order.create({
-        //where: {customerId: parseInt(id) },
-        data: {
-          orderDate,
-          totalAmount,
-          customerId ,
-        },
-      });
-      res.status(201).json(novaOrder);
+      const customer = await prisma.customer.findMany();
+      res.status(200).json(customer);
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: 'Falha ao cadastrar nova order' });
+      console.error('Erro ao listar clientes:', error);
+      res.status(500).json({ error: 'Erro ao listar clientes' });
     }
   },
 
-  async ListarTodosOrders (req, res) {
-    try {
-      const orders = await prisma.order.findMany();
-      res.status(200).json(orders);
-    } catch (error) {
-      res.status(500).json({ error: 'Falha ao listar orders' });
-    }
-  },
-
-  async ListarOrder (req, res) {
+  async ListarCustomer (req, res) {
     const { id } = req.params;
-    // console.log("idorder: "+id);
 
     try {
-      const order = await prisma.order.findUnique({
+      const customer = await prisma.customer.findUnique({
         where: { id: parseInt(id) },
       });
-      if (!order) {
-        return res.status(404).json({ error: 'Order não encontrada' });
+      if (!customer) {
+        return res.status(404).json({ error: 'Cliente não encontrado' });
       }
-      res.status(200).json(order);
+      res.status(200).json(customer);
     } catch (error) {
-      res.status(500).json({ error: 'Falha ao listar order' });
+      res.status(500).json({ error: 'Falha ao encontrar o cliente' });
     }
   },
 
-
-  async AtualizarOrder (req, res) {
-    const { id } = req.params;
-    const { orderDate, totalAmount, customerId} = req.body;
+  async CadastrarCustomer(req, res) {
     try {
-      const orderAtualizado = await prisma.order.update({
-        where: { id: parseInt(id) },
+      const { name, email } = req.body;
+
+      if (!name || !email ) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      }
+
+      const novoCustomer = await prisma.customer.create({
         data: {
-          orderDate,
-          totalAmount,
-          customerId,
+          name,
+          email,
         },
       });
-      res.status(200).json(orderAtualizado);
+
+      res.status(201).json(novoCustomer);
     } catch (error) {
-      res.status(500).json({ error: 'Falha ao atualizar order' });
+      console.error('Erro ao cadastrar cliente:', error);
+      res.status(500).json({ error: 'Erro ao cadastrar cliente' });
+    }
+  },
+  
+  async DeletarCustomer(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({ error: 'ID do cliente é obrigatório' });
+      }
+
+      const customer = await prisma.customer.delete({
+        where: { id: parseInt(id) },
+      });
+
+      res.status(200).json(customer);
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      res.status(500).json({ error: 'Erro ao deletar cliente' });
     }
   },
 
-  async DeletarOrder (req, res) {
-    const { id } = req.params;
+  async AtualizarCustomer (req, res) {
     try {
-      await prisma.order.delete({
+      const { id } = req.params;
+      const { name, email } = req.body;
+
+      if (!id || !name || !email ) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      }
+
+      const customerAtualizado = await prisma.customer.update({
         where: { id: parseInt(id) },
+        data: {
+          name,
+          email,
+        },
       });
-      res.status(204).send();
+
+      res.status(200).json(customerAtualizado);
     } catch (error) {
-      res.status(500).json({ error: 'Falha ao deletar order' });
+      console.error('Erro ao atualizar cliente:', error);
+      res.status(500).json({ error: 'Erro ao atualizar cliente' });
     }
   }
 }
